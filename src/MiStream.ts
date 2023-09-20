@@ -72,6 +72,16 @@ export class MiStream {
 
       this.ws.addEventListener("open", () => resolve());
 
+      this.ws.addEventListener("close", () => {
+        console.info("[MiStream] disconnected stream.");
+
+        this.ws = this.ws = new WebSocket(url);
+      });
+
+      this.ws.addEventListener("error", (e) => {
+        console.error("[MiStream] error.", e);
+      });
+
       this.ws.addEventListener("message", async (e) => {
         console.log(e.data);
 
