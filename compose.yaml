@@ -7,6 +7,4 @@ services:
       - .env
     network_mode: "host"
     volumes:
-      - ./markov:/bot/markov
-      - ./markov-shm:/bot/markov-shm
-      - ./markov-wal:/bot/markov-wal
+      - ./.db:/bot/.db

@@ -10,7 +10,11 @@ await dotenv.load({
 });
 
 const client = new MiClient(Deno.env.get("HOST")!, Deno.env.get("TOKEN")!);
-const markov = new Markov(await Deno.openKv("markov"));
+
+try {
+  await Deno.mkdir(".db");
+} catch {}
+const markov = new Markov(await Deno.openKv(".db/markov"));
 const bot = new Bot(client.createStream(), client, markov);
 
 await bot.start();
