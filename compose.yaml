@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  bot:
+    build: .
+    env_file:
+      - .env
+    network_mode: "host"
+    volumes:
+      - ./markov:/bot/markov
+      - ./markov-shm:/bot/markov-shm
+      - ./markov-wal:/bot/markov-wal
