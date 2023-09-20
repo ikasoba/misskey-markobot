@@ -62,11 +62,15 @@ export class MiStream {
 
   constructor(private token: string, private hostname: string) {}
 
-  connectServer(protocol = "wss") {
-    return new Promise<void>((resolve, reject) => {
-      const url = new URL("/streaming", `${protocol}://${this.hostname}`);
-      url.searchParams.set("i", this.token);
+  async connectServer(protocol = "wss") {
+    const url = new URL("/streaming", `${protocol}://${this.hostname}`);
+    url.searchParams.set("i", this.token);
 
+    await this.connectWs(url);
+  }
+
+  private connectWs(url: URL) {
+    return new Promise<void>((resolve) => {
       this.ws = new WebSocket(url);
       this.ws.binaryType = "blob";
 
@@ -75,7 +79,7 @@ export class MiStream {
       this.ws.addEventListener("close", () => {
         console.info("[MiStream] disconnected stream.");
 
-        this.ws = this.ws = new WebSocket(url);
+        this.connectWs(url);
       });
 
       this.ws.addEventListener("error", (e) => {
