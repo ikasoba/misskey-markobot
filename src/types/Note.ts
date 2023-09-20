@@ -5,4 +5,5 @@ export interface MiNote {
   text?: string | null;
   user: MiUser;
   userId: string;
+  channelId?: string | null;
 }

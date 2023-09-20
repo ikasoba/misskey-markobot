@@ -33,7 +33,7 @@ export class Bot {
       console.log("[note]");
       if (
         e.data.type != "note" || !e.data.body.text ||
-        e.data.body.userId == this.me.id
+        e.data.body.userId == this.me.id || e.data.body.channelId != null
       ) return;
 
       this.trainQueue.push(e.data.body);
