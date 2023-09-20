@@ -28,6 +28,11 @@ export class Bot {
     await this.stream.connectServer();
     this.stream.connectMain();
     this.stream.connectTimeline("homeTimeline", { withReplies: false });
+    this.stream.setReconnectHandler(async () => {
+      await this.stream.connectServer();
+      this.stream.connectMain();
+      this.stream.connectTimeline("homeTimeline", { withReplies: false });
+    })
 
     this.stream.addEventListener("note", (e) => {
       console.log("[note]");
