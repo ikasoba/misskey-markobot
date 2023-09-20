@@ -48,7 +48,7 @@ export class Bot {
     this.stream.addEventListener("mention", async (e) => {
       console.log("[mention]");
 
-      await this.sendMonologue();
+      await this.sendMonologue(e.data.body.id);
     });
 
     this.startTrainQueueRunner();
