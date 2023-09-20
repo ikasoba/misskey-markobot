@@ -84,7 +84,7 @@ export class MiStream {
       this.ws.addEventListener("close", () => {
         console.info("[MiStream] disconnected stream.");
 
-        this.reconnectHandker?.();
+        this.reconnectHandler?.();
       });
 
       this.ws.addEventListener("error", (e) => {
