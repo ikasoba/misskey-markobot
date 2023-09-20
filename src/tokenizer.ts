@@ -48,7 +48,7 @@ export function tokenizeMfm(text: string): string[] {
         return tokenize(tree.props.content);
 
       case "mention":
-        return tokenize(tree.props.acct);
+        return [tree.props.acct];
 
       case "mathInline":
       case "mathBlock":
