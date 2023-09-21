@@ -59,6 +59,7 @@ export class MiStreamEvent<
 export class MiStream {
   private eventTarget = new EventTarget();
   private ws?: WebSocket | null = null;
+  private reconnectHandler: null | (() => void) = null;
 
   constructor(
     private token: string,
@@ -77,6 +78,10 @@ export class MiStream {
     await this.connectWs(url);
   }
 
+  setReconnectHandler(f: () => void) {
+    this.reconnectHandler = f
+  }
+
   private connectWs(url: URL) {
     return new Promise<void>((resolve) => {
       this.ws = new WebSocket(url);
@@ -87,7 +92,7 @@ export class MiStream {
       this.ws.addEventListener("close", () => {
         console.info("[MiStream] disconnected stream.");
 
-        this.connectWs(url);
+        this.reconnectHandler?.();
       });
 
       this.ws.addEventListener("error", (e) => {
