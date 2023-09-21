@@ -2,9 +2,13 @@
   "lock": false,
   "imports": {
     "mfm-js/": "https://esm.sh/mfm-js@0.23.3/",
-    "dotenv/": "https://deno.land/std@0.202.0/dotenv/"
+    "dotenv/": "https://deno.land/std@0.202.0/dotenv/",
+    "shuffle/": "https://deno.land/x/shuffle@v1.0.1/"
   },
   "compilerOptions": {
-    "lib": ["deno.unstable", "dom"]
+    "lib": [
+      "deno.unstable",
+      "dom"
+    ]
   }
 }

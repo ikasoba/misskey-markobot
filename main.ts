@@ -9,7 +9,13 @@ await dotenv.load({
   envPath: ".env",
 });
 
-const client = new MiClient(Deno.env.get("HOST")!, Deno.env.get("TOKEN")!);
+const parseBool = (s: string) => s == "true";
+
+const client = new MiClient(
+  Deno.env.get("HOST")!,
+  Deno.env.get("TOKEN")!,
+  Deno.env.get("IS_SSL") == null ? true : parseBool(Deno.env.get("IS_SSL")!),
+);
 
 try {
   await Deno.mkdir(".db");

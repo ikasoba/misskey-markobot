@@ -60,10 +60,18 @@ export class MiStream {
   private eventTarget = new EventTarget();
   private ws?: WebSocket | null = null;
 
-  constructor(private token: string, private hostname: string) {}
+  constructor(
+    private token: string,
+    private hostname: string,
+    private isSSL = true,
+  ) {}
 
-  async connectServer(protocol = "wss") {
-    const url = new URL("/streaming", `${protocol}://${this.hostname}`);
+  private protocol() {
+    return this.isSSL ? "wss" : "ws";
+  }
+
+  async connectServer() {
+    const url = new URL("/streaming", `${this.protocol()}://${this.hostname}`);
     url.searchParams.set("i", this.token);
 
     await this.connectWs(url);

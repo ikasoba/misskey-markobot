@@ -1,4 +1,5 @@
 import { tokenizeMfm as tokenize } from "./tokenizer.ts";
+import shuffle from "shuffle/mod.ts";
 
 export interface TokenInfo {
   [next: string]: number;
@@ -12,6 +13,8 @@ export type ProbabilityTable = [string, number][];
  * アルゴリズムが本当にアッてるのかわからない
  */
 export class Markov {
+  private wordThreshold = 0.9;
+
   constructor(private store: Deno.Kv) {}
 
   async study(text: string) {
@@ -45,18 +48,16 @@ export class Markov {
     for (const k in cache) {
       await this.store.set(
         [k],
-        /** シャッフルすることで内容の多様性を高める試み */
+        /** シャッフルすることで出力の多様性を高める試み */
         Object.fromEntries(
-          Object.entries(cache[k]).sort(() => 0.5 - Math.random()),
+          shuffle(Object.entries(cache[k])),
         ),
       );
     }
   }
 
   private createProbabilityTable(token: TokenInfo): ProbabilityTable {
-    return Object.entries(token).sort(() => 0.5 - Math.random()).sort((x, y) =>
-      y[1] - x[1]
-    );
+    return shuffle(Object.entries(token)).sort((x, y) => x[1] - y[1]);
   }
 
   private removeDuplicationFromTable(
@@ -98,7 +99,9 @@ export class Markov {
    * @returns 何も学習してないなら `null`
    */
   async generate() {
-    const cache: Record<string, ProbabilityTable> = {}, res = [];
+    const cache: Record<string, ProbabilityTable> = {},
+      res = [],
+      usedWords = new Set<string>();
 
     let prevToken = "(START)";
     let prevTable = await this.store.get<TokenInfo>(["(START)"]).then((x) =>
@@ -110,23 +113,38 @@ export class Markov {
     );
     if (prevTable == null) return null;
 
-    const randomChoice = (table: ProbabilityTable) => {
+    const randomChoice = (table: ProbabilityTable, usedWords: Set<string>) => {
       console.info("[randomChoice] called.", table);
-      const rnd = Math.floor(Math.random() * (table[0][1] * 1));
+      const rnd = Math.floor(
+        Math.random() * (table.reduce((p, c) => p + c[1], 0)),
+      );
 
       for (let i = 0; i < table.length; i++) {
         const [token, p] = table[i];
 
-        if (rnd >= p) {
+        if (rnd <= p) {
+          if (usedWords.has(token)) {
+            table[i][1] = table[i][1] * this.wordThreshold;
+          } else {
+            usedWords.add(token);
+          }
           return token;
         }
       }
 
-      return table.at(-1)![0];
+      const row = table.at(-1)!;
+      const token = row[0];
+
+      if (usedWords.has(token)) {
+        row[1] = row[1] * this.wordThreshold;
+      } else {
+        usedWords.add(token);
+      }
+      return token;
     };
 
     for (let i = 0; i < 30 && prevToken != "(END)";) {
-      const nextToken = randomChoice(prevTable);
+      const nextToken = randomChoice(prevTable, usedWords);
       let nextTable: ProbabilityTable;
 
       if (nextToken == "(END)") break;

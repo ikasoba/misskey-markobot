@@ -3,20 +3,31 @@ import { MiNote } from "./types/Note.ts";
 import { MiUser } from "./types/User.ts";
 
 export class MiClient {
-  constructor(public hostname: string, private token: string) {}
+  constructor(
+    public hostname: string,
+    private token: string,
+    private isSSL = true,
+  ) {}
 
   createStream() {
-    return new MiStream(this.token, this.hostname);
+    return new MiStream(this.token, this.hostname, this.isSSL);
+  }
+
+  private protocol() {
+    return this.isSSL ? "https" : "http";
   }
 
   async me() {
-    const res = await fetch(`https://${this.hostname}/api/i`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `${this.protocol()}://${this.hostname}/api/i`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ i: this.token }),
       },
-      body: JSON.stringify({ i: this.token }),
-    });
+    );
     if (!res.ok) {
       throw new Error(`request failed. ${res.url}`);
     }
@@ -33,13 +44,16 @@ export class MiClient {
       visibility?: "home" | "public" | "followers" | "specified";
     },
   ) {
-    const res = await fetch(`https://${this.hostname}/api/notes/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `${this.protocol()}://${this.hostname}/api/notes/create`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...data, i: this.token }),
       },
-      body: JSON.stringify({ ...data, i: this.token }),
-    });
+    );
     if (!res.ok) {
       throw new Error(`request failed. ${res.url}`);
     }
@@ -49,13 +63,16 @@ export class MiClient {
   }
 
   async getFollowers(options?: { id: string }) {
-    const res = await fetch(`https://${this.hostname}/api/users/followers`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `${this.protocol()}://${this.hostname}/api/users/followers`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...options, i: this.token }),
       },
-      body: JSON.stringify({ ...options, i: this.token }),
-    });
+    );
     if (!res.ok) {
       throw new Error(`request failed. ${res.url}`);
     }
@@ -64,13 +81,16 @@ export class MiClient {
   }
 
   async follow(id: string) {
-    const res = await fetch(`https://${this.hostname}/api/following/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const res = await fetch(
+      `${this.protocol()}://${this.hostname}/api/following/create`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: id, i: this.token }),
       },
-      body: JSON.stringify({ userId: id, i: this.token }),
-    });
+    );
     if (!res.ok) {
       throw new Error(`request failed. ${res.url}`);
     }
