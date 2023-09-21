@@ -106,9 +106,11 @@ export class Markov {
     let prevToken = "(START)";
     let prevTable = await this.store.get<TokenInfo>(["(START)"]).then((x) =>
       x.value &&
-      this.removeDuplicationFromTable(
-        this.createProbabilityTable(x.value),
-        ["(START)"],
+      shuffle(
+        this.removeDuplicationFromTable(
+          this.createProbabilityTable(x.value),
+          ["(START)"],
+        ).map(([k, v]) => [k, 1]),
       )
     );
     if (prevTable == null) return null;
