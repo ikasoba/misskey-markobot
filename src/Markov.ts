@@ -111,7 +111,7 @@ export class Markov {
           this.createProbabilityTable(x.value),
           ["(START)"],
         ).map(([k, v]) => [k, 1]),
-      )
+      ) as ProbabilityTable
     );
     if (prevTable == null) return null;
 
