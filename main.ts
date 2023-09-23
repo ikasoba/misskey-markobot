@@ -20,7 +20,10 @@ const client = new MiClient(
 try {
   await Deno.mkdir(".db");
 } catch {}
-const markov = new Markov(await Deno.openKv(".db/markov"));
+const markov = new Markov(
+  await Deno.openKv(".db/markov"),
+  +Deno.env.get("MAX_WORDS")!
+);
 const bot = new Bot(client.createStream(), client, markov);
 
 await bot.start();

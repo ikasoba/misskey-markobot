@@ -15,7 +15,7 @@ export type ProbabilityTable = [string, number][];
 export class Markov {
   private wordThreshold = 0.9;
 
-  constructor(private store: Deno.Kv) {}
+  constructor(private store: Deno.Kv, private maxWords: number = 100) {}
 
   async study(text: string) {
     const tokens = ["(START)", ...tokenize(text), "(END)"];
@@ -145,7 +145,7 @@ export class Markov {
       return token;
     };
 
-    for (let i = 0; i < 30 && prevToken != "(END)";) {
+    for (let i = 0; i < this.maxWords && prevToken != "(END)";) {
       const nextToken = randomChoice(prevTable, usedWords);
       let nextTable: ProbabilityTable;
 
