@@ -15,7 +15,7 @@ export class ReactionShoot {
     // 意味のないもの以外を取得
     const words = (await this.mecab.parse(text)).filter((x) =>
       ["助詞", "特殊", "記号", "接尾辞", "判定詞"].every((f) =>
-        !x.feature.includes(f)
+        !x.feature?.includes(f)
       ) &&
       /\p{L}/u.test(x.surface)
     );

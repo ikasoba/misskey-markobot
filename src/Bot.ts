@@ -45,10 +45,10 @@ export class Bot {
       ) return;
 
       this.trainQueue.push(e.data.body);
+      this.reactionTrainQueue.push(e.data.body.id);
 
-      if (0.5 < Math.random()) {
+      if (0.85 < Math.random()) {
         await this.putEmojiReaction(e.data.body);
-        this.reactionTrainQueue.push(e.data.body.id);
       }
     });
 
