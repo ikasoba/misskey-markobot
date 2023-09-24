@@ -2,6 +2,7 @@ import MeCab from "deno_mecab/mod.ts";
 import { MiNote } from "../types/Note.ts";
 import { ParsedWord } from "deno_mecab/mod.ts";
 import { randomChoice } from "../util/random.ts";
+import { naN2zero } from "../util/naN2zero.ts";
 
 type Emojis = Record<string, number>;
 
@@ -11,7 +12,7 @@ export class ReactionShoot {
   /**
    * 文字列の中で多く出てきた文字を抽出
    */
-  private async extractWords(text: string) {
+  private async extractWords(text: string, maxLength = 5) {
     // 意味のないもの以外を取得
     const words = (await this.mecab.parse(text)).filter((x) =>
       ["助詞", "特殊", "記号", "接尾辞", "判定詞"].every((f) =>
@@ -26,7 +27,10 @@ export class ReactionShoot {
       tmp.set(w.surface, (tmp.get(w.surface) || 0) + 1);
     }
 
-    const res = [...tmp.entries()].sort((x, y) => y[1] - x[1]).slice(0, 5).map((
+    const res = [...tmp.entries()].sort((x, y) => y[1] - x[1]).slice(
+      0,
+      maxLength,
+    ).map((
       x,
     ) => x[0]);
     console.log("[words]", res);
@@ -52,21 +56,21 @@ export class ReactionShoot {
         // ホストの表記はmfmの絵文字の形式とは異なるため消す
         emoji = emoji.replace("@.", "");
 
-        const count = note.reactions[emoji];
+        const count = naN2zero(note.reactions[emoji]);
         const emojis = await this.kv.get<Emojis>([w]).then((x) =>
           x.value ?? {}
         );
 
         await this.kv.set([w], {
           ...emojis,
-          [emoji]: (emojis[emoji] || 0) + count,
+          [emoji]: (naN2zero(emojis[emoji]) || 0) + count,
         });
       }
     }
   }
 
   async text2emoji(text: string): Promise<string | null> {
-    const words = await this.extractWords(text);
+    const words = await this.extractWords(text, 15);
     const emojiTable: Emojis = {};
 
     for (const w of words) {
@@ -74,7 +78,7 @@ export class ReactionShoot {
       if (emojis == null) continue;
 
       for (const k in emojis) {
-        emojiTable[k] = (emojiTable[k] ?? 0) + emojis[k];
+        emojiTable[k] = (naN2zero(emojiTable[k]) ?? 0) + emojis[k];
       }
     }
 

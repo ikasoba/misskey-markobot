@@ -44,7 +44,7 @@ export class Bot {
         e.data.body.userId == this.me.id || e.data.body.channelId != null
       ) return;
 
-      this.trainQueue.push(e.data.body);
+      if (e.data.body.cw == null) this.trainQueue.push(e.data.body);
       this.reactionTrainQueue.push(e.data.body.id);
 
       if (0.85 < Math.random()) {
@@ -146,21 +146,25 @@ export class Bot {
           count < 10 && i < 20 && this.reactionTrainQueue.length > 0;
           i++
         ) {
-          const noteId = this.reactionTrainQueue.shift()!;
-          const note = await this.client.getNote(noteId);
+          try {
+            const noteId = this.reactionTrainQueue.shift()!;
+            const note = await this.client.getNote(noteId);
 
-          // 1分30秒後に学習させるため
-          if (
-            Date.now() - new Date(note.createdAt).getTime() < 1.5 * 60 * 1000
-          ) {
-            this.reactionTrainQueue.push(noteId);
-            continue;
+            // 1分30秒後に学習させるため
+            if (
+              Date.now() - new Date(note.createdAt).getTime() < 1.5 * 60 * 1000
+            ) {
+              this.reactionTrainQueue.push(noteId);
+              continue;
+            }
+            if (Object.entries(note.reactions).length == 0) {
+              continue;
+            }
+            await this.trainReaction(note);
+            count++;
+          } catch (e) {
+            console.error(e);
           }
-          if (Object.entries(note.reactions).length == 0) {
-            continue;
-          }
-          await this.trainReaction(note);
-          count++;
         }
         console.info("リアクション学習終了");
       } finally {

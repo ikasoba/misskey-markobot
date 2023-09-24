@@ -136,7 +136,9 @@ export class MiClient {
     );
 
     if (!res.ok) {
-      throw new Error(`request failed. ${res.url} ${res.status}`);
+      throw new Error(
+        `request failed. ${res.url} ${res.status} ${id} ${res.text()}`,
+      );
     }
 
     if (enableCache) this.cache.set(cacheKey, res);
