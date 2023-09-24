@@ -151,7 +151,7 @@ export class Bot {
 
           // 1分30秒後に学習させるため
           if (
-            Date.now() - new Date(note.createdAt).getTime() < 1.3 * 60 * 1000
+            Date.now() - new Date(note.createdAt).getTime() < 1.5 * 60 * 1000
           ) {
             this.reactionTrainQueue.push(noteId);
             continue;
