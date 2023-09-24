@@ -2,6 +2,7 @@ import MeCab from "deno_mecab/mod.ts";
 import { MiNote } from "../types/Note.ts";
 import { ParsedWord } from "deno_mecab/mod.ts";
 import { randomChoice } from "../util/random.ts";
+import { naN2zero } from "../util/naN2Zero.ts";
 
 type Emojis = Record<string, number>;
 
@@ -55,14 +56,14 @@ export class ReactionShoot {
         // ホストの表記はmfmの絵文字の形式とは異なるため消す
         emoji = emoji.replace("@.", "");
 
-        const count = note.reactions[emoji];
+        const count = naN2zero(note.reactions[emoji]);
         const emojis = await this.kv.get<Emojis>([w]).then((x) =>
           x.value ?? {}
         );
 
         await this.kv.set([w], {
           ...emojis,
-          [emoji]: (emojis[emoji] || 0) + count,
+          [emoji]: (naN2zero(emojis[emoji]) || 0) + count,
         });
       }
     }
@@ -77,7 +78,7 @@ export class ReactionShoot {
       if (emojis == null) continue;
 
       for (const k in emojis) {
-        emojiTable[k] = (emojiTable[k] ?? 0) + emojis[k];
+        emojiTable[k] = (naN2zero(emojiTable[k]) ?? 0) + emojis[k];
       }
     }
 
