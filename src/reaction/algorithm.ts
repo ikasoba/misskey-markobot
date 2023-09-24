@@ -2,7 +2,7 @@ import MeCab from "deno_mecab/mod.ts";
 import { MiNote } from "../types/Note.ts";
 import { ParsedWord } from "deno_mecab/mod.ts";
 import { randomChoice } from "../util/random.ts";
-import { naN2zero } from "../util/naN2Zero.ts";
+import { naN2zero } from "../util/naN2zero.ts";
 
 type Emojis = Record<string, number>;
 
