@@ -44,7 +44,7 @@ export class Bot {
         e.data.body.userId == this.me.id || e.data.body.channelId != null
       ) return;
 
-      this.trainQueue.push(e.data.body);
+      if (e.data.body.cw == null) this.trainQueue.push(e.data.body);
       this.reactionTrainQueue.push(e.data.body.id);
 
       if (0.85 < Math.random()) {
