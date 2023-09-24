@@ -1,8 +1,11 @@
 import { MiStream } from "./MiStream.ts";
 import { MiNote } from "./types/Note.ts";
 import { MiUser } from "./types/User.ts";
+import { TemporaryCache } from "./util/fetchWithCache.ts";
 
 export class MiClient {
+  private cache = new TemporaryCache();
+
   constructor(
     public hostname: string,
     private token: string,
@@ -73,6 +76,7 @@ export class MiClient {
         body: JSON.stringify({ ...options, i: this.token }),
       },
     );
+
     if (!res.ok) {
       throw new Error(`request failed. ${res.url} ${res.status}`);
     }
@@ -114,7 +118,12 @@ export class MiClient {
     }
   }
 
-  async getNote(id: string) {
+  async getNote(id: string, enableCache = true) {
+    const cacheKey = `get-note:${id}`;
+    if (enableCache && this.cache.has(cacheKey)) {
+      return (await this.cache.get(cacheKey)!.json()) as MiNote;
+    }
+
     const res = await fetch(
       `${this.protocol()}://${this.hostname}/api/notes/show`,
       {
@@ -129,6 +138,8 @@ export class MiClient {
     if (!res.ok) {
       throw new Error(`request failed. ${res.url} ${res.status}`);
     }
+
+    if (enableCache) this.cache.set(cacheKey, res);
 
     return await res.json() as MiNote;
   }

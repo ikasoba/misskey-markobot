@@ -7,4 +7,5 @@ export interface MiNote {
   userId: string;
   channelId?: string | null;
   reactions: Record<string, number>;
+  createdAt: string;
 }

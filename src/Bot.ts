@@ -148,6 +148,14 @@ export class Bot {
         ) {
           const noteId = this.reactionTrainQueue.shift()!;
           const note = await this.client.getNote(noteId);
+
+          // 1分30秒後に学習させるため
+          if (
+            Date.now() - new Date(note.createdAt).getTime() < 1.3 * 60 * 1000
+          ) {
+            this.reactionTrainQueue.push(noteId);
+            continue;
+          }
           if (Object.entries(note.reactions).length == 0) {
             continue;
           }
