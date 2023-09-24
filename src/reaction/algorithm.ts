@@ -1,4 +1,4 @@
-import MeCab from "deno_mecab/src/MeCab.ts";
+import MeCab from "deno_mecab/mod.ts";
 import { MiNote } from "../types/Note.ts";
 import { ParsedWord } from "deno_mecab/mod.ts";
 import { randomChoice } from "../util/random.ts";
@@ -14,7 +14,8 @@ export class ReactionShoot {
   private async extractWords(text: string) {
     // 意味のないもの以外を取得
     const words = (await this.mecab.parse(text)).filter((x) =>
-      !["助詞", "特殊"].some((f) => x.feature.includes(f))
+      ["助詞", "特殊", "記号"].every((f) => !x.feature.includes(f)) &&
+      /\p{L}/u.test(x.surface)
     );
 
     // 単語が出てきた回数をカウント
