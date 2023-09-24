@@ -116,7 +116,6 @@ export class Markov {
     if (prevTable == null) return null;
 
     const randomChoice = (table: ProbabilityTable, usedWords: Set<string>) => {
-      console.info("[randomChoice] called.", table);
       const rnd = Math.floor(
         Math.random() * (table.reduce((p, c) => p + c[1], 0)),
       );
@@ -149,7 +148,9 @@ export class Markov {
       const nextToken = randomChoice(prevTable, usedWords);
       let nextTable: ProbabilityTable;
 
-      if (nextToken == "(END)") break;
+      if (nextToken == "(END)") {
+        break;
+      }
 
       nextTable = await this.getNextProbabilityTable(
         nextToken,

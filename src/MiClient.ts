@@ -29,7 +29,7 @@ export class MiClient {
       },
     );
     if (!res.ok) {
-      throw new Error(`request failed. ${res.url}`);
+      throw new Error(`request failed. ${res.url} ${res.status}`);
     }
 
     return await res.json() as MiUser;
@@ -55,7 +55,7 @@ export class MiClient {
       },
     );
     if (!res.ok) {
-      throw new Error(`request failed. ${res.url}`);
+      throw new Error(`request failed. ${res.url} ${res.status}`);
     }
 
     const resData = await res.json();
@@ -74,7 +74,7 @@ export class MiClient {
       },
     );
     if (!res.ok) {
-      throw new Error(`request failed. ${res.url}`);
+      throw new Error(`request failed. ${res.url} ${res.status}`);
     }
 
     return await res.json() as MiUser[];
@@ -92,7 +92,7 @@ export class MiClient {
       },
     );
     if (!res.ok) {
-      throw new Error(`request failed. ${res.url}`);
+      throw new Error(`request failed. ${res.url} ${res.status}`);
     }
 
     return await res.json() as MiUser;
@@ -110,7 +110,7 @@ export class MiClient {
       },
     );
     if (!res.ok) {
-      throw new Error(`request failed. ${res.url}`);
+      throw new Error(`request failed. ${res.url} ${res.status}`);
     }
   }
 
@@ -127,7 +127,7 @@ export class MiClient {
     );
 
     if (!res.ok) {
-      throw new Error(`request failed. ${res.url}`);
+      throw new Error(`request failed. ${res.url} ${res.status}`);
     }
 
     return await res.json() as MiNote;

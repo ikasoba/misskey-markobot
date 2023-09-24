@@ -12,9 +12,9 @@ export class ReactionShoot {
    * 文字列の中で多く出てきた文字を抽出
    */
   private async extractWords(text: string) {
-    // 助詞っぽい単語以外を取得
+    // 意味のないもの以外を取得
     const words = (await this.mecab.parse(text)).filter((x) =>
-      !x.feature.includes("助詞")
+      !["助詞", "特殊"].some((f) => x.feature.includes(f))
     );
 
     // 単語が出てきた回数をカウント
@@ -23,10 +23,13 @@ export class ReactionShoot {
       tmp.set(w.surface, (tmp.get(w.surface) || 0) + 1);
     }
 
+    const res = [...tmp.entries()].sort((x, y) => y[1] - x[1]).slice(0, 5).map((
+      x,
+    ) => x[0]);
+    console.log("[words]", res);
+
     // 単語を多く出てきた順番にソートして上位五位までを抽出
-    return [...tmp.entries()].sort((x, y) => y[1] - x[1]).slice(0, 5).map((x) =>
-      x[0]
-    );
+    return res;
   }
 
   private isLocalEmojiOrUnicodeEmoji(emoji: string) {
@@ -37,6 +40,8 @@ export class ReactionShoot {
     if (note.text == null) return;
     const words = await this.extractWords(note.text);
 
+    console.log("[reaction train] reactions", note.reactions);
+
     for (const w of words) {
       for (let emoji in note.reactions) {
         if (!this.isLocalEmojiOrUnicodeEmoji(emoji)) continue;
@@ -45,8 +50,9 @@ export class ReactionShoot {
         emoji = emoji.replace("@.", "");
 
         const count = note.reactions[emoji];
-        const emojis = await this.kv.get<Emojis>([w]).then((x) => x.value);
-        if (emojis == null) continue;
+        const emojis = await this.kv.get<Emojis>([w]).then((x) =>
+          x.value ?? {}
+        );
 
         await this.kv.set([w], {
           ...emojis,
@@ -70,6 +76,8 @@ export class ReactionShoot {
     }
 
     const emoji = await randomChoice(Object.entries(emojiTable), null);
+
+    console.log("[emoji]", emojiTable);
 
     return emoji;
   }

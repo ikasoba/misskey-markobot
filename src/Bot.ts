@@ -166,6 +166,7 @@ export class Bot {
   async putEmojiReaction(note: MiNote) {
     if (note.text == null) return;
     const emoji = await this.reactionModel.text2emoji(note.text);
+    console.info("[emoji]", emoji);
     if (emoji == null) return;
 
     await this.client.putReaction(note.id, emoji);
