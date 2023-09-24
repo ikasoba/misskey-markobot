@@ -30,7 +30,7 @@ export class ReactionShoot {
   }
 
   private isLocalEmojiOrUnicodeEmoji(emoji: string) {
-    return emoji[0] != ":" || /^:[a-zA-Z_0-9-]+@\.:$/.test(emoji);
+    return emoji[0] != ":" || /^:[a-zA-Z_0-9-]+(?:@\.)?:$/.test(emoji);
   }
 
   async train(note: MiNote) {

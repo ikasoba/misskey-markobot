@@ -113,4 +113,23 @@ export class MiClient {
       throw new Error(`request failed. ${res.url}`);
     }
   }
+
+  async getNote(id: string) {
+    const res = await fetch(
+      `${this.protocol()}://${this.hostname}/api/notes/show`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ noteId: id, i: this.token }),
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error(`request failed. ${res.url}`);
+    }
+
+    return await res.json() as MiNote;
+  }
 }

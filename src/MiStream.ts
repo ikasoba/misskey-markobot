@@ -1,6 +1,14 @@
 import { MiNote } from "./types/Note.ts";
 import { MiUser } from "./types/User.ts";
 
+export type NotificationBody = {
+  type: "reaction";
+  reaction: string;
+  user: MiUser;
+  useId: string;
+  note: MiNote;
+};
+
 export type StreamMessageMap = {
   mention: {
     type: "channel";
@@ -42,6 +50,13 @@ export type StreamMessageMap = {
       body: MiNote;
     };
   };
+  notification: {
+    type: "channel";
+    body: {
+      type: "notification";
+      body: NotificationBody;
+    };
+  };
 };
 
 export class MiStreamEvent<
@@ -79,7 +94,7 @@ export class MiStream {
   }
 
   setReconnectHandler(f: () => void) {
-    this.reconnectHandler = f
+    this.reconnectHandler = f;
   }
 
   private connectWs(url: URL) {

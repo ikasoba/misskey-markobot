@@ -10,6 +10,7 @@ import { ReactionShoot } from "./reaction/algorithm.ts";
 export class Bot {
   private me!: MiUser;
   private trainQueue: MiNote[] = [];
+  private reactionTrainQueue: string[] = [];
   private followerIds = new Set<string>();
 
   constructor(
@@ -47,6 +48,7 @@ export class Bot {
 
       if (0.5 < Math.random()) {
         await this.putEmojiReaction(e.data.body);
+        this.reactionTrainQueue.push(e.data.body.id);
       }
     });
 
@@ -62,8 +64,20 @@ export class Bot {
       await this.sendMonologue(e.data.body.id);
     });
 
+    this.stream.addEventListener("notification", async (e) => {
+      if (e.data.body.type != "reaction") return;
+
+      await this.trainReaction({
+        ...e.data.body.note,
+        reactions: {
+          [e.data.body.reaction]: 1,
+        },
+      });
+    });
+
     this.startTrainQueueRunner();
     this.startMonologueRunner();
+    this.startReactionTrainQueueRunner();
 
     console.log("準備完了");
   }
@@ -120,6 +134,35 @@ export class Bot {
     run();
   }
 
+  private startReactionTrainQueueRunner() {
+    const run = async () => {
+      try {
+        console.info(
+          "リアクション学習開始",
+          this.reactionTrainQueue.slice(-10),
+        );
+        for (
+          let i = 0, count = 0;
+          count < 10 && i < 20 && this.reactionTrainQueue.length > 0;
+          i++
+        ) {
+          const noteId = this.reactionTrainQueue.shift()!;
+          const note = await this.client.getNote(noteId);
+          if (Object.entries(note.reactions).length == 0) {
+            continue;
+          }
+          await this.trainReaction(note);
+          count++;
+        }
+        console.info("リアクション学習終了");
+      } finally {
+        setTimeout(run, 1000 * 60);
+      }
+    };
+
+    run();
+  }
+
   async putEmojiReaction(note: MiNote) {
     if (note.text == null) return;
     const emoji = await this.reactionModel.text2emoji(note.text);
@@ -149,7 +192,7 @@ export class Bot {
   async trainNote(note: MiNote) {
     if (!note.text) {
       console.info(
-        "[Bot#onMention] note content is null.",
+        "[Bot#trainNote] note content is null.",
         JSON.stringify(note),
       );
       return;
@@ -167,6 +210,25 @@ export class Bot {
     if (content.length == 0) return;
 
     await this.markov.study(content);
+  }
+
+  async trainReaction(note: MiNote) {
+    if (!note.text) {
+      console.info(
+        "[Bot#trainReaction] note content is null.",
+        JSON.stringify(note),
+      );
+      return;
+    }
+
+    const content = note.text.replaceAll(
+      new RegExp(
+        `@${this.me.username}${this.me.host ? `@${this.me.host}` : ""}`,
+        "g",
+      ),
+      "",
+    ).trim();
+
     await this.reactionModel.train({ ...note, text: content });
   }
 }
