@@ -11,7 +11,7 @@ export class ReactionShoot {
   /**
    * 文字列の中で多く出てきた文字を抽出
    */
-  private async extractWords(text: string) {
+  private async extractWords(text: string, maxLength = 5) {
     // 意味のないもの以外を取得
     const words = (await this.mecab.parse(text)).filter((x) =>
       ["助詞", "特殊", "記号", "接尾辞", "判定詞"].every((f) =>
@@ -26,7 +26,10 @@ export class ReactionShoot {
       tmp.set(w.surface, (tmp.get(w.surface) || 0) + 1);
     }
 
-    const res = [...tmp.entries()].sort((x, y) => y[1] - x[1]).slice(0, 5).map((
+    const res = [...tmp.entries()].sort((x, y) => y[1] - x[1]).slice(
+      0,
+      maxLength,
+    ).map((
       x,
     ) => x[0]);
     console.log("[words]", res);
@@ -66,7 +69,7 @@ export class ReactionShoot {
   }
 
   async text2emoji(text: string): Promise<string | null> {
-    const words = await this.extractWords(text);
+    const words = await this.extractWords(text, 15);
     const emojiTable: Emojis = {};
 
     for (const w of words) {
