@@ -1,7 +1,7 @@
 import { MiStream } from "./MiStream.ts";
 import { MiNote } from "./types/Note.ts";
 import { MiUser } from "./types/User.ts";
-import { TemporaryCache } from "./util/fetchWithCache.ts";
+import { TemporaryCache } from "./util/TemporaryCache.ts";
 
 export class MiClient {
   private cache = new TemporaryCache();
