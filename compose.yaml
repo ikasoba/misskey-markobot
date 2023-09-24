@@ -8,4 +8,3 @@ services:
     network_mode: "host"
     volumes:
       - ./.db:/bot/.db
-      - ./.reaction_db:/bot/.reaction_db
