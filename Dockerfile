@@ -1,4 +1,7 @@
-FROM denoland/deno:1.36.4
+FROM denoland/deno:ubuntu-1.36.4
+
+RUN apt update
+RUN apt install mecab libmecab-dev mecab-ipadic-utf8
 
 WORKDIR /bot
 COPY main.ts .

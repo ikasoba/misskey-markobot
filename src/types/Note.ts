@@ -6,4 +6,5 @@ export interface MiNote {
   user: MiUser;
   userId: string;
   channelId?: string | null;
+  reactions: Record<string, number>;
 }

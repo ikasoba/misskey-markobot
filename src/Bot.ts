@@ -5,6 +5,7 @@ import * as mfm from "mfm-js/";
 import { MiUser } from "./types/User.ts";
 import { Markov } from "./Markov.ts";
 import { Scheduler } from "./Scheduler.ts";
+import { ReactionShoot } from "./reaction/algorithm.ts";
 
 export class Bot {
   private me!: MiUser;
@@ -15,6 +16,7 @@ export class Bot {
     private stream: MiStream,
     private client: MiClient,
     private markov: Markov,
+    private reactionModel: ReactionShoot,
   ) {}
 
   async start() {
@@ -32,9 +34,9 @@ export class Bot {
       await this.stream.connectServer();
       this.stream.connectMain();
       this.stream.connectTimeline("homeTimeline", { withReplies: false });
-    })
+    });
 
-    this.stream.addEventListener("note", (e) => {
+    this.stream.addEventListener("note", async (e) => {
       console.log("[note]");
       if (
         e.data.type != "note" || !e.data.body.text ||
@@ -42,6 +44,10 @@ export class Bot {
       ) return;
 
       this.trainQueue.push(e.data.body);
+
+      if (0.5 < Math.random()) {
+        await this.putEmojiReaction(e.data.body);
+      }
     });
 
     this.stream.addEventListener("followed", async (e) => {
@@ -114,6 +120,14 @@ export class Bot {
     run();
   }
 
+  async putEmojiReaction(note: MiNote) {
+    if (note.text == null) return;
+    const emoji = await this.reactionModel.text2emoji(note.text);
+    if (emoji == null) return;
+
+    await this.client.putReaction(note.id, emoji);
+  }
+
   async sendMonologue(replyId?: string) {
     console.info("[monologue] start generation.");
     const text = await this.markov.generate();
@@ -148,10 +162,11 @@ export class Bot {
       ),
       "",
     ).trim();
-    console.log("[trainNote]", JSON.stringify(content));
+    console.info("[trainNote]", JSON.stringify(content));
 
     if (content.length == 0) return;
 
     await this.markov.study(content);
+    await this.reactionModel.train({ ...note, text: content });
   }
 }

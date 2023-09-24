@@ -97,4 +97,20 @@ export class MiClient {
 
     return await res.json() as MiUser;
   }
+
+  async putReaction(noteId: string, reaction: string) {
+    const res = await fetch(
+      `${this.protocol()}://${this.hostname}/api/notes/reactions/create`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ noteId, reaction, i: this.token }),
+      },
+    );
+    if (!res.ok) {
+      throw new Error(`request failed. ${res.url}`);
+    }
+  }
 }
