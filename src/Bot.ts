@@ -48,7 +48,7 @@ export class Bot {
       this.reactionTrainQueue.push(e.data.body.id);
 
       if (0.85 < Math.random()) {
-        await this.putEmojiReaction(e.data.body);
+        setTimeout(() => this.putEmojiReaction(e.data.body), 3 * 1000);
       }
     });
 
@@ -149,6 +149,7 @@ export class Bot {
           try {
             const noteId = this.reactionTrainQueue.shift()!;
             const note = await this.client.getNote(noteId);
+            if (note == null) continue;
 
             // 1分30秒後に学習させるため
             if (

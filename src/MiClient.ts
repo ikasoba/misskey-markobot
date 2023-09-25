@@ -136,8 +136,10 @@ export class MiClient {
     );
 
     if (!res.ok) {
+      const err = await res.json();
+      if (err?.code == "NO_SUCH_NOTE") return null;
       throw new Error(
-        `request failed. ${res.url} ${res.status} ${id} ${res.text()}`,
+        `request failed. ${res.url} ${res.status} ${id}`,
       );
     }
 
