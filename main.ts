@@ -25,6 +25,7 @@ try {
 const markov = new Markov(
   await Deno.openKv(".db/markov"),
   +Deno.env.get("MAX_WORDS")!,
+  +Deno.env.get("WORD_THRESHOLD")!,
 );
 
 const reaction = new ReactionShoot(

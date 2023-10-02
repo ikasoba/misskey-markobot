@@ -13,9 +13,11 @@ export type ProbabilityTable = [string, number][];
  * アルゴリズムが本当にアッてるのかわからない
  */
 export class Markov {
-  private wordThreshold = 0.9;
-
-  constructor(private store: Deno.Kv, private maxWords: number = 100) {}
+  constructor(
+    private store: Deno.Kv,
+    private maxWords: number = 100,
+    private wordThreshold = 0.9,
+  ) {}
 
   async study(text: string) {
     const tokens = ["(START)", ...tokenize(text), "(END)"];
