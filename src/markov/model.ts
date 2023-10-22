@@ -1,9 +1,7 @@
-import { tokenizeMfm as tokenize } from "./tokenizer.ts";
+import { Database } from "sqlite3/mod.ts";
+import { tokenizeMfm as tokenize } from "../tokenizer.ts";
 import shuffle from "shuffle/mod.ts";
-
-export interface TokenInfo {
-  [next: string]: number;
-}
+import { TokenInfo, TokenStorage } from "./storage.ts";
 
 export type ProbabilityTable = [string, number][];
 
@@ -14,12 +12,12 @@ export type ProbabilityTable = [string, number][];
  */
 export class Markov {
   constructor(
-    private store: Deno.Kv,
+    private storage: TokenStorage,
     private maxWords: number = 100,
     private wordThreshold = 0.9,
   ) {}
 
-  async study(text: string) {
+  study(text: string) {
     const tokens = ["(START)", ...tokenize(text), "(END)"];
 
     const cache: Record<string, TokenInfo> = {};
@@ -32,9 +30,7 @@ export class Markov {
       let tokenInfo: TokenInfo;
       if (token in cache) tokenInfo = cache[token];
       else {
-        tokenInfo = await this.store.get<TokenInfo>([token]).then((x) =>
-          x.value
-        ) ?? {};
+        tokenInfo = this.storage.get(token) ?? {};
         cache[token] = tokenInfo;
       }
 
@@ -48,8 +44,8 @@ export class Markov {
     );
 
     for (const k in cache) {
-      await this.store.set(
-        [k],
+      this.storage.set(
+        k,
         /** シャッフルすることで出力の多様性を高める試み */
         Object.fromEntries(
           shuffle(Object.entries(cache[k])),
@@ -69,19 +65,16 @@ export class Markov {
     return table.filter((x) => !token.some((y) => x[0] == y));
   }
 
-  async getNextProbabilityTable(
+  getNextProbabilityTable(
     token: string,
     prevToken: string,
     cache: Record<string, ProbabilityTable>,
-  ): Promise<ProbabilityTable> {
+  ): ProbabilityTable {
     let res;
 
     if (token in cache) res = cache[token];
     else {
-      const tokenInfo = await this.store.get<TokenInfo>([token]).then((x) =>
-        x.value
-      ) ??
-        {};
+      const tokenInfo = this.storage.get(token) ?? {};
 
       res = this.removeDuplicationFromTable(
         this.createProbabilityTable(tokenInfo),
@@ -100,22 +93,21 @@ export class Markov {
   /**
    * @returns 何も学習してないなら `null`
    */
-  async generate() {
+  generate() {
     const cache: Record<string, ProbabilityTable> = {},
       res = [],
       usedWords = new Set<string>();
 
     let prevToken = "(START)";
-    let prevTable = await this.store.get<TokenInfo>(["(START)"]).then((x) =>
-      x.value &&
-      shuffle(
-        this.removeDuplicationFromTable(
-          this.createProbabilityTable(x.value),
-          ["(START)"],
-        ).map(([k, v]) => [k, 1]),
-      ) as ProbabilityTable
-    );
-    if (prevTable == null) return null;
+    let startToken = this.storage.get("(START)");
+    if (startToken == null) return null;
+
+    let prevTable = shuffle(
+      this.removeDuplicationFromTable(
+        this.createProbabilityTable(startToken),
+        ["(START)"],
+      ).map(([k, v]) => [k, 1]),
+    ) as ProbabilityTable;
 
     const randomChoice = (table: ProbabilityTable, usedWords: Set<string>) => {
       const rnd = Math.floor(
@@ -154,7 +146,7 @@ export class Markov {
         break;
       }
 
-      nextTable = await this.getNextProbabilityTable(
+      nextTable = this.getNextProbabilityTable(
         nextToken,
         prevToken,
         cache,

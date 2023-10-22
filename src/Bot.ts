@@ -3,7 +3,7 @@ import { MiStream } from "./MiStream.ts";
 import { MiNote } from "./types/Note.ts";
 import * as mfm from "mfm-js/";
 import { MiUser } from "./types/User.ts";
-import { Markov } from "./Markov.ts";
+import { Markov } from "./markov/model.ts";
 import { Scheduler } from "./Scheduler.ts";
 import { ReactionShoot } from "./reaction/algorithm.ts";
 

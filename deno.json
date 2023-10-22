@@ -4,7 +4,8 @@
     "mfm-js/": "https://esm.sh/mfm-js@0.23.3/",
     "dotenv/": "https://deno.land/std@0.202.0/dotenv/",
     "shuffle/": "https://deno.land/x/shuffle@v1.0.1/",
-    "deno_mecab/": "https://deno.land/x/deno_mecab@v1.2.3/"
+    "deno_mecab/": "https://deno.land/x/deno_mecab@v1.2.3/",
+    "sqlite3/": "https://deno.land/x/sqlite3@0.9.1/"
   },
   "compilerOptions": {
     "lib": [
