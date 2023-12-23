@@ -195,12 +195,16 @@ export class Bot {
 
     console.info("[monologue]", text);
 
-    await this.client.createNote({
-      localOnly: true,
-      text,
-      visibility: "home",
-      replyId,
-    });
+    try {
+      await this.client.createNote({
+        localOnly: true,
+        text,
+        visibility: "home",
+        replyId,
+      });
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   async trainNote(note: MiNote) {

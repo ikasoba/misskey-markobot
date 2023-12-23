@@ -14,7 +14,7 @@ export class Markov {
   constructor(
     private storage: TokenStorage,
     private maxWords: number = 100,
-    private wordThreshold = 0.9,
+    private wordThreshold = 0.9
   ) {}
 
   study(text: string) {
@@ -24,7 +24,7 @@ export class Markov {
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
-      const next = (i + 1) < tokens.length ? tokens[i + 1] : null;
+      const next = i + 1 < tokens.length ? tokens[i + 1] : null;
       if (!next) continue;
 
       let tokenInfo: TokenInfo;
@@ -40,16 +40,14 @@ export class Markov {
 
     console.info(
       "[markov#study] study success.",
-      JSON.stringify(cache, null, "  "),
+      JSON.stringify(cache, null, "  ")
     );
 
     for (const k in cache) {
       this.storage.set(
         k,
         /** シャッフルすることで出力の多様性を高める試み */
-        Object.fromEntries(
-          shuffle(Object.entries(cache[k])),
-        ),
+        Object.fromEntries(shuffle(Object.entries(cache[k])))
       );
     }
   }
@@ -60,7 +58,7 @@ export class Markov {
 
   private removeDuplicationFromTable(
     table: ProbabilityTable,
-    token: string[],
+    token: string[]
   ): ProbabilityTable {
     return table.filter((x) => !token.some((y) => x[0] == y));
   }
@@ -68,7 +66,7 @@ export class Markov {
   getNextProbabilityTable(
     token: string,
     prevToken: string,
-    cache: Record<string, ProbabilityTable>,
+    cache: Record<string, ProbabilityTable>
   ): ProbabilityTable {
     let res;
 
@@ -78,7 +76,7 @@ export class Markov {
 
       res = this.removeDuplicationFromTable(
         this.createProbabilityTable(tokenInfo),
-        [token, prevToken],
+        [token, prevToken]
       );
       cache[token] = res;
     }
@@ -103,15 +101,14 @@ export class Markov {
     if (startToken == null) return null;
 
     let prevTable = shuffle(
-      this.removeDuplicationFromTable(
-        this.createProbabilityTable(startToken),
-        ["(START)"],
-      ).map(([k, v]) => [k, 1]),
+      this.removeDuplicationFromTable(this.createProbabilityTable(startToken), [
+        "(START)",
+      ]).map(([k, v]) => [k, 1])
     ) as ProbabilityTable;
 
     const randomChoice = (table: ProbabilityTable, usedWords: Set<string>) => {
       const rnd = Math.floor(
-        Math.random() * (table.reduce((p, c) => p + c[1], 0)),
+        Math.random() * table.reduce((p, c) => p + c[1], 0)
       );
 
       for (let i = 0; i < table.length; i++) {
@@ -138,7 +135,7 @@ export class Markov {
       return token;
     };
 
-    for (let i = 0; i < this.maxWords && prevToken != "(END)";) {
+    for (let i = 0; i < this.maxWords && prevToken != "(END)"; ) {
       const nextToken = randomChoice(prevTable, usedWords);
       let nextTable: ProbabilityTable;
 
@@ -146,11 +143,7 @@ export class Markov {
         break;
       }
 
-      nextTable = this.getNextProbabilityTable(
-        nextToken,
-        prevToken,
-        cache,
-      );
+      nextTable = this.getNextProbabilityTable(nextToken, prevToken, cache);
 
       res.push(nextToken);
 

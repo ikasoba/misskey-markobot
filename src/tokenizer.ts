@@ -4,7 +4,9 @@ import * as mfm from "mfm-js/";
 const segmenter = new Intl.Segmenter("jp", { granularity: "word" });
 
 export function tokenize(text: string): string[] {
-  return [...segmenter.segment(text)].map((x) => x.segment);
+  return [...segmenter.segment(text.replace(/^\s+|\s+$/g, ""))].map(
+    (x) => x.segment
+  );
 }
 
 export function tokenizeMfm(text: string): string[] {
@@ -15,7 +17,7 @@ export function tokenizeMfm(text: string): string[] {
 
       case "link":
       case "url":
-        return [tree.props.url];
+        return [];
 
       case "hashtag":
         return tokenize(tree.props.hashtag);
@@ -35,9 +37,9 @@ export function tokenizeMfm(text: string): string[] {
           `$[${tree.props.name}${
             tree.props.args
               ? "." +
-                Object.entries(tree.props.args).map((x) => x.join("=")).join(
-                  ",",
-                )
+                Object.entries(tree.props.args)
+                  .map((x) => x.join("="))
+                  .join(",")
               : ""
           }`,
           ...tree.children.flatMap((x) => processMfm(x)),
