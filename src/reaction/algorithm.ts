@@ -14,11 +14,11 @@ export class ReactionShoot {
    */
   private async extractWords(text: string, maxLength = 5) {
     // 意味のないもの以外を取得
-    const words = (await this.mecab.parse(text)).filter((x) =>
-      ["助詞", "特殊", "記号", "接尾辞", "判定詞"].every((f) =>
-        !x.feature?.includes(f)
-      ) &&
-      /\p{L}/u.test(x.surface)
+    const words = (await this.mecab.parse(text)).filter(
+      (x) =>
+        ["助詞", "特殊", "記号", "接尾辞", "判定詞"].every(
+          (f) => !x.feature?.includes(f)
+        ) && /\p{L}/u.test(x.surface)
     );
 
     // 単語が出てきた回数をカウント
@@ -27,12 +27,10 @@ export class ReactionShoot {
       tmp.set(w.surface, (tmp.get(w.surface) || 0) + 1);
     }
 
-    const res = [...tmp.entries()].sort((x, y) => y[1] - x[1]).slice(
-      0,
-      maxLength,
-    ).map((
-      x,
-    ) => x[0]);
+    const res = [...tmp.entries()]
+      .sort((x, y) => y[1] - x[1])
+      .slice(0, maxLength)
+      .map((x) => x[0]);
     console.log("[words]", res);
 
     // 単語を多く出てきた順番にソートして上位五位までを抽出
@@ -40,7 +38,11 @@ export class ReactionShoot {
   }
 
   private isLocalEmojiOrUnicodeEmoji(emoji: string) {
-    return emoji[0] != ":" || /^:[a-zA-Z_0-9-]+(?:@\.)?:$/.test(emoji);
+    return (
+      emoji[0] != ":" ||
+      /^:[a-zA-Z_0-9-]+(?:@\.)?:$/.test(emoji) ||
+      !["🖕"].includes(emoji)
+    );
   }
 
   async train(note: MiNote) {
@@ -57,9 +59,9 @@ export class ReactionShoot {
         emoji = emoji.replace("@.", "");
 
         const count = naN2zero(note.reactions[emoji]);
-        const emojis = await this.kv.get<Emojis>([w]).then((x) =>
-          x.value ?? {}
-        );
+        const emojis = await this.kv
+          .get<Emojis>([w])
+          .then((x) => x.value ?? {});
 
         await this.kv.set([w], {
           ...emojis,
