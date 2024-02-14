@@ -5,6 +5,7 @@ import { TemporaryCache } from "./util/TemporaryCache.ts";
 
 export class MiClient {
   private cache = new TemporaryCache();
+  private restrictedWords: string[] = Deno.env.get("RESTRICTED_WORDS") ? Deno.env.get("RESTRICTED_WORDS")!.split(",") : [];
 
   constructor(
     public hostname: string,
@@ -47,6 +48,10 @@ export class MiClient {
       visibility?: "home" | "public" | "followers" | "specified";
     },
   ) {
+      //禁止ワードが入っていたらエラーを返す
+      if (data.text && this.containsRestrictedWord(data.text)) {
+          throw new Error(`禁止用語が入っていたので投稿できませんでした。`);
+      }
     const res = await fetch(
       `${this.protocol()}://${this.hostname}/api/notes/create`,
       {
@@ -147,4 +152,12 @@ export class MiClient {
 
     return await res.json() as MiNote;
   }
+    private containsRestrictedWord(text: string): boolean {
+        for (const word of this.restrictedWords) {
+            if (text.includes(word)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
