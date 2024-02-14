@@ -3,3 +3,4 @@ deno.lock
 .db/
 .idea
 .vscode
+/.vscode/
