@@ -197,7 +197,7 @@ export class Bot {
 
     try {
       await this.client.createNote({
-        localOnly: true,
+        localOnly: false,
         text,
         visibility: "home",
         replyId,
